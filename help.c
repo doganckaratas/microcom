@@ -174,7 +174,9 @@ static void help_send_escape(int fd, char c)
         in_escape = 1;
         break;
     case '~': /* display it again */
-        help_escape();
+//        help_escape();
+	/* pass ~ to console */
+	write(fd, &c, 1);
         break;
     default:
         /* pass the character through */
