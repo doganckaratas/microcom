@@ -17,6 +17,12 @@ Features:
 - Distribution: source code, LINUX executable, LRP based floppy
 - Automatic modem detection
 
+Additions by me:
+========
+- Terminal options menu mechanism changed
+- Logger option now doesn't start immediately if given by command line argument
+
+
 Please have a look in the provided index.html file for details.
 ---------------------------------------------------------------
 

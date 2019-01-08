@@ -19,8 +19,6 @@
 ****************************************************************************/
 #include "microcom.h"
 
-#define MICROCOM_PROMPT "Microcom cmd:" /*Command:*/ /* to avoid confusion with the program output received by the serial link */
-
 extern int crnl_mapping; //0 - no mapping, 1 mapping
 extern int script; /* script active flag */
 extern char scr_name[MAX_SCRIPT_NAME]; /* name of the script */
@@ -38,7 +36,6 @@ static void help_escape(void);
 static void help_terminal(void);
 static void help_speed(void);
 static void help_send_escape(int fd, char c);
-static void help_done(void);
 
 /******************************************************************
  Help handling functions
@@ -66,27 +63,19 @@ static void help_done(void);
         - buf - pointer to the character buffer
         - num - number of valid characters in the buffer
 ******************************************************************/
-static void help_done(void)
-{
-    char done_str[] = "Help done!\n";
-    write(STDOUT_FILENO, done_str, strlen(done_str));
-}
-
-
 
 static void help_escape(void)
 {
     char str1[] =
         "\n"
         "**********Help***********\n"
-        "  x - exit microcom\n"
+        "  q - exit microcom\n"
         "  b - send break\n";
 
     char str2[] =
         "  t - set terminal\n"
-        "  q - quit help\n"
-        "*************************\n"
-        MICROCOM_PROMPT;
+        "  x - quit help\n"
+        "*************************\n";
 
     write(STDOUT_FILENO, str1, strlen(str1));
 
@@ -116,9 +105,8 @@ static void help_terminal(void)
         "  n - no flow control\n"
         "  h - hardware flow control\n"
         "  s - software flow control\n"
-        "  q - quit help\n"
-        "*************************\n"
-        MICROCOM_PROMPT;
+        "  x - quit help\n"
+        "*************************\n";
 
     write(STDOUT_FILENO, str1, strlen(str1));
     if (crnl_mapping) {
@@ -143,9 +131,8 @@ static void help_speed(void)
         " h - 115200\n"
         " i - 230400\n"
         " j - 460800\n"
-        " q - quit help\n"
-        "*************************\n"
-        MICROCOM_PROMPT;
+        " x - quit help\n"
+        "*************************\n";
 
     write(STDOUT_FILENO, str, strlen(str));
 }
@@ -159,12 +146,12 @@ static void help_send_escape(int fd, char c)
     help_state = 0;
 
     switch (c) {
-    case 'x':
+    case 'q':
         /* restore termios settings and exit */
         write(STDOUT_FILENO, "\n", 1);
         cleanup_termios(0);
         break;
-    case 'q': /* quit help */
+    case 'x': /* quit help */
         break;
     case 'l': /* log on/off */
         if (flog == 0) { /* open log file */
@@ -195,9 +182,6 @@ static void help_send_escape(int fd, char c)
         write(fd, &c, 1);
         break;
     }
-
-    if (in_escape == 0)
-        help_done();
 
     return;
 }
@@ -251,7 +235,7 @@ static void help_set_terminal(int fd, char c)
         tcsetattr(fd, TCSANOW, &pts);
         break;
     case '~':
-    case 'q':
+    case 'x':
         in_escape = 0;
         help_state = 0;
         break;
@@ -261,9 +245,6 @@ static void help_set_terminal(int fd, char c)
         write(fd, &c, 1);
         break;
     }
-
-    if (in_escape == 0)
-        help_done();
 
     return;
 }
@@ -303,7 +284,6 @@ static void help_set_speed(int fd, char c)
     tcsetattr(fd, TCSANOW, &pts);
     in_escape = 0;
     help_state = 0;
-    help_done();
 }
 
 
@@ -346,11 +326,12 @@ void cook_buf(int fd, char *buf, int num)
 
         if (current < num) { /* process an escape sequence */
             /* found an escape character */
-            if (help_state == 0) {
+            if (help_state == 0 && buf[current] == 0x7e && current == 0) {
                 help_escape();
             }
+
             current++;
-            if (current >= num) {
+            if (current >= num && current == 1) {
                 /* interpret first character of next sequence */
                 in_escape = 1;
                 return;

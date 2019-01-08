@@ -86,6 +86,7 @@ void init_stdin(struct termios *sts)
 int open_logFile()
 {
     int error = EXIT_SUCCESS;
+    struct stat f_stat;
     if (NULL == flog) {
         flog = fopen(log_file, "a");
         if (flog != (FILE *)NULL) {
@@ -247,7 +248,7 @@ static inline int parse_cmdLine(int argc, char *argv[])
                 strncpy(log_file,optarg,PATH_MAX);
                 DEBUG_VAR(log_file,"%s");
             }
-            open_logFile();
+//            open_logFile();
             break;
         case 't': {
             const int value = atoi(optarg);
