@@ -3,9 +3,10 @@
 
 AC_PREREQ([2.67])
 AC_INIT(microcom, 1.06, oliviers.open.source.softwares@gmail.com)
-AM_INIT_AUTOMAKE([dist-bzip2])
+AC_CONFIG_AUX_DIR([build-aux])
 AC_CONFIG_SRCDIR([microcom.c])
 AC_CONFIG_HEADERS([config.h])
+AM_INIT_AUTOMAKE([-Wall -Werror foreign])
 
 # Checks for programs.
 AC_PROG_CC
