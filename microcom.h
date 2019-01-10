@@ -32,6 +32,7 @@
 #include <termios.h>
 #include <unistd.h>
 #include <assert.h>
+#include <time.h>
 #include <linux/limits.h>
 #include "debug.h"
 

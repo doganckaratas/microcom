@@ -56,7 +56,8 @@ void mux_loop(int pf)
 	int i = 0;	/* used in the multiplex loop */
 	int done = 0;
 	char buf[BUFSIZE];
-	char *tok = buf;
+	time_t raw;
+	struct tm *t;
 	struct timeval tv;
 
 	tv.tv_sec = SCRIPT_DELAY;
@@ -111,7 +112,21 @@ void mux_loop(int pf)
 						fwrite(buf, 1, i, flog);
 					}
 				}
-				write(STDOUT_FILENO, buf, i);
+
+				time(&raw);
+				t = localtime(&raw);
+
+				for (int ch = 0; ch < i; ch++) {
+					/* TODO: fix timestamp later. */
+					switch(buf[ch]) {
+					case '\n':
+						fprintf(stderr, "\n[%02d:%02d:%02d] ", t->tm_hour, t->tm_min, t->tm_sec);
+						break;
+					default:
+						fprintf(stderr, "%c", buf[ch]);
+					}
+				}
+
 				if (script) {
 					i = script_process(S_DCE, buf, i);
 					if (i > 0) {
