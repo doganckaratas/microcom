@@ -118,6 +118,7 @@ void mux_loop(int pf)
 
 				for (int ch = 0; ch < i; ch++) {
 					/* TODO: fix timestamp later. */
+					/* TODO: logger doesn't acquire timestamp, fix it. */
 					switch(buf[ch]) {
 					case '\n':
 						fprintf(stderr, "\n[%02d:%02d:%02d] ", t->tm_hour, t->tm_min, t->tm_sec);
