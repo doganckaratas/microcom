@@ -17,11 +17,18 @@ Features:
 - Distribution: source code, LINUX executable, LRP based floppy
 - Automatic modem detection
 
-Additions by me:
+Additions @doganckaratas:
 ========
 - Terminal options menu mechanism changed
-- Logger option now doesn't start immediately if given by command line argument
+- Logger option now divided into 2 options, log enable/disable and log file selection options.
+- Logger now includes timestamps (extended/basic/none)
+- Timestamps are seperately configurable between console window and log file
 
+
+Known bugs:
+========
+- Unfortunately, DEL key does not redirecting to Terminal target. I'll fix it a.s.a.p
+- Logger filename option and timestamp options are not configurable realtime in console window.
 
 Please have a look in the provided index.html file for details.
 ---------------------------------------------------------------
