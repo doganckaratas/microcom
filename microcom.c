@@ -113,6 +113,7 @@ int close_logFile()
 			error = errno;
 			ERROR_MSG("error %d (%m) closing the log file %s",error,log_file);
 		}
+		fprintf(stderr,"log disabled\n");
 		flog = NULL; /* set to null anyway to be able to open a new one */
 	} else {
 		WARNING_MSG("there is no log file opened\n");
@@ -138,12 +139,15 @@ main program function
 static const struct option longopts[] = {
 	{"device", required_argument, NULL, 'D'},
 	{"script", optional_argument, NULL, 'S'},
-	{"log", optional_argument, NULL, 'L'},
+	{"log", no_argument, NULL, 'l'},
+	{"logfile", optional_argument, NULL, 'L'},
 	{"timeout", required_argument, NULL, 't'},
 	{"filter", no_argument, NULL, 'F'},
 	{"speed", required_argument, NULL, 's'},
 	{"help", no_argument, NULL, 'h'},
 	{"version", no_argument, NULL, 'v'},
+	{"logger_mode", optional_argument, NULL, 'p'},
+	{"console_mode", optional_argument, NULL, 'c'},
 	{NULL, 0, NULL, 0}
 };
 
@@ -154,7 +158,7 @@ static void main_help(FILE *output)
 	"\t-D<devfile>, --device=<devfile> use the specified serial port device;\n"
 	"\t                                if a port is not provided, microcom\n"
 	"\t                                will try to autodetect a connected serial device\n"
-	"\t           example: -D /dev/ttyS3\n"
+	"\t                                example: -D /dev/ttyS3\n"
 	"\t-S,--script                     run script from script.scr (default)\n"
 	"\t-S<scrfile>,--script=<scrfile>  run script from scrfile\n"
 	"\t-t<timeout>,--timeout=<timeout> initial timeout value in seconds\n"
@@ -162,8 +166,12 @@ static void main_help(FILE *output)
 	"\t-s,--speed=<initial speed>      set initial terminal speed (input and output, default is 9600 bps) \n"
 	"\t-h,--help                       printf this help\n"
 	"\t-v,--version                    display the program's version number\n"
-	"\t-L,--log                        enable session logging in microcom.log file\n"
-	"\t-L<logfile>,--log=<logfile>     enable session logging in the specified filename\n"
+	"\t-l,--log                        enable session logging in either user-defined or microcom.log file\n"
+	"\t-L<logfile>,--logfile=<logfile> set filename to be used with logger.\n"
+	"\t-p<mode>,--logger_mode<mode>    set timestamp mode in console window (default is simple)\n"
+	"\t                                available modes: -pnone (or don't set this argument), -psimple, -pcomplex\n"
+	"\t-c<mode>,--console_mode<mode>   set timestamp mode in console window (default is none)\n"
+	"\t                                available modes: -cnone (or don't set this argument), -csimple, -ccomplex\n"
 	"\n");
 }
 
@@ -230,7 +238,7 @@ static inline int parse_cmdLine(int argc, char *argv[])
 	int error = EXIT_SUCCESS;
 	int optc;
 
-	while (((optc = getopt_long (argc, argv, "D:S::L::t:Fs:hv", longopts, NULL)) != -1) && (EXIT_SUCCESS == error)) {
+	while (((optc = getopt_long (argc, argv, "D:S::L::p::c::t:Fs:hvl", longopts, NULL)) != -1) && (EXIT_SUCCESS == error)) {
 		int param;
 		switch (optc) {
 			case 'D':
@@ -243,12 +251,15 @@ static inline int parse_cmdLine(int argc, char *argv[])
 				DEBUG_VAR(scr_name,"%s");
 			}
 			break;
+			case 'l': {
+				open_logFile();
+			}
+			break;
 			case 'L':
 			if (optarg != NULL) {
 				strncpy(log_file,optarg,PATH_MAX);
 				DEBUG_VAR(log_file,"%s");
 			}
-			//            open_logFile();
 			break;
 			case 't': {
 				const int value = atoi(optarg);
@@ -270,6 +281,32 @@ static inline int parse_cmdLine(int argc, char *argv[])
 					initial_speed = requested_speed;
 				} else {
 					fprintf(stderr,"invalid speed parameters arguments %s, valid values are %s\n",optarg,valid_terminal_speeds());
+				}
+			}
+			break;
+			case 'p':
+			if (optarg != NULL) {
+				if (strncmp(optarg, "simple", 6) == 0) {
+					logger_timestamp_e = LOGGER_TIMESTAMP_SIMPLE;
+				} else if (strncmp(optarg, "complex", 7) == 0) {
+					logger_timestamp_e = LOGGER_TIMESTAMP_COMPLEX;
+				} else if (strncmp(optarg, "none", 4) == 0) {
+					logger_timestamp_e = LOGGER_TIMESTAMP_NONE;
+				} else {
+					logger_timestamp_e = LOGGER_TIMESTAMP_NONE;
+				}
+			}
+			break;
+			case 'c':
+			if (optarg != NULL) {
+				if (strncmp(optarg, "simple", 6) == 0) {
+					console_timestamp_e = LOGGER_TIMESTAMP_SIMPLE;
+				} else if (strncmp(optarg, "complex", 7) == 0) {
+					console_timestamp_e = LOGGER_TIMESTAMP_COMPLEX;
+				} else if (strncmp(optarg, "none", 4) == 0) {
+					console_timestamp_e = LOGGER_TIMESTAMP_NONE;
+				} else {
+					console_timestamp_e = LOGGER_TIMESTAMP_NONE;
 				}
 			}
 			break;
@@ -324,6 +361,9 @@ int main(int argc, char *argv[])
 	struct sigaction sact;/* used to initialize the signal handler */
 
 	device[0] = '\0';
+	/* default logger options, can be overridden by -p and -c flags */
+	console_timestamp_e = LOGGER_TIMESTAMP_NONE;
+	logger_timestamp_e = LOGGER_TIMESTAMP_SIMPLE;
 
 	/* parse command line */
 	error = parse_cmdLine(argc,argv);

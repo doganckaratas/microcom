@@ -37,7 +37,7 @@
 #include "debug.h"
 
 #ifndef VERSION
-#define VERSION "1.06"
+#define VERSION "1.07"
 #endif /* VERSION */
 
 #define MAX_SCRIPT_NAME PATH_MAX /* maximum length of the name of the script file */
@@ -60,6 +60,12 @@ typedef enum {
 	S_DCE,		/* incoming data from serial port */
 	S_MAX		/* not used - just for checking */
 } S_ORIGINATOR;
+
+enum logger_timestamp_mode {
+	LOGGER_TIMESTAMP_SIMPLE,
+	LOGGER_TIMESTAMP_COMPLEX,
+	LOGGER_TIMESTAMP_NONE
+} logger_timestamp_e, console_timestamp_e;
 
 int script_process(S_ORIGINATOR orig, char* buf, int size); /* script.c */
 void script_init(char* s); /* script.c */

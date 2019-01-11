@@ -49,19 +49,27 @@ static inline char *PrintableBuffer(const char *buffer,const size_t l, size_t *s
 	return printable;
 }
 
-int append_timestamp_and_dump(FILE *stream, char *buffer, int length)
+int logger_dump_with_timestamp(FILE *stream, char *buffer, int length, enum logger_timestamp_mode m)
 {
 	int char_pos = 0;
 	time_t raw;
 	struct tm *t;
+	struct timeval tv;
 	time(&raw);
 	t = localtime(&raw);
+	gettimeofday(&tv, NULL);
+
 
 	for (char_pos = 0; char_pos < length; char_pos++) {
 		/* TODO: fix timestamp later. */
 		switch(buffer[char_pos]) {
 		case '\n':
+			if (m == LOGGER_TIMESTAMP_COMPLEX)
+			fprintf(stream, "\n[%04d-%02d-%02d %02d:%02d:%02d.%03i] ", t->tm_year + 1900, t->tm_mon + 1, t->tm_mday, t->tm_hour, t->tm_min, t->tm_sec, tv.tv_usec / 1000);
+			else if (m == LOGGER_TIMESTAMP_SIMPLE)
 			fprintf(stream, "\n[%02d:%02d:%02d] ", t->tm_hour, t->tm_min, t->tm_sec);
+			else
+			fprintf(stream, "\n");
 			break;
 		default:
 			fprintf(stream, "%c", buffer[char_pos]);
@@ -124,7 +132,7 @@ void mux_loop(int pf)
 					if (flog != NULL) {
 						printable[size] = '\n';
 						printable[size+1] = '\0';
-						const size_t written = append_timestamp_and_dump(flog, printable, size);
+						const size_t written = logger_dump_with_timestamp(flog, printable, size, logger_timestamp_e);
 						if (written != size) {
 							const int error = errno;
 							DEBUG_MSG("error writing log file, only %u characters written, errno = %d",written,error);
@@ -134,12 +142,12 @@ void mux_loop(int pf)
 					/* raw memory dump */
 					DEBUG_DUMP_MEMORY(buf,i);
 					if (flog != 0) {
-						append_timestamp_and_dump(flog, buf, i);
+						logger_dump_with_timestamp(flog, buf, i, logger_timestamp_e);
 					}
 				}
 
 				/* XXX: DO NOT use stdout, hence it is buffered. */
-				append_timestamp_and_dump(stderr, buf, i);
+				logger_dump_with_timestamp(stderr, buf, i, console_timestamp_e);
 
 				if (script) {
 					i = script_process(S_DCE, buf, i);
