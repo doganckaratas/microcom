@@ -59,7 +59,6 @@ int logger_dump_with_timestamp(FILE *stream, char *buffer, int length, enum logg
 	t = localtime(&raw);
 	gettimeofday(&tv, NULL);
 
-
 	for (char_pos = 0; char_pos < length; char_pos++) {
 		switch(buffer[char_pos]) {
 		case '\n':
@@ -83,11 +82,8 @@ void mux_loop(int pf)
 {
 	fd_set ready;	/* used for select */
 	int i = 0;	/* used in the multiplex loop */
-	// int char_pos = 0;
 	int done = 0;
 	char buf[BUFSIZE];
-	// time_t raw;
-	// struct tm *t;
 	struct timeval tv;
 
 	tv.tv_sec = SCRIPT_DELAY;
@@ -120,8 +116,6 @@ void mux_loop(int pf)
 		if (FD_ISSET(pf, &ready)) {
 			/* pf has characters for us */
 			i = read(pf, buf, BUFSIZE);
-			// time(&raw);
-			// t = localtime(&raw);
 			if (i > 0) {
 				if (options & OPTION_LOG_FILTER) {
 					/* only printable characters */
