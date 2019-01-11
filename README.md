@@ -27,7 +27,7 @@ Additions by @doganckaratas:
 
 Known bugs:
 ========
-- Unfortunately, DEL key does not redirecting to Terminal target. I'll fix it a.s.a.p
+- Unfortunately, DEL key does not redirecting to Terminal target. I'll fix it ASAP
 - Logger filename option and timestamp options are not configurable realtime in console window.
 
 Please have a look in the provided index.html file for details.
