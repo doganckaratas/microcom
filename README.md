@@ -17,13 +17,13 @@ Features:
 - Distribution: source code, LINUX executable, LRP based floppy
 - Automatic modem detection
 
-Additions by @doganckaratas:
+Modifications by @doganckaratas:
 ========
 - Terminal options menu mechanism changed
 - Logger option now divided into 2 options, log enable/disable and log file selection options.
 - Logger now includes timestamps (extended/basic/none)
 - Timestamps are seperately configurable between console window and log file
-
+- Removed unnecessary autoconf/automake generated files (project cleanup)
 
 Known bugs:
 ========
