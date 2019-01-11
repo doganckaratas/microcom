@@ -17,7 +17,7 @@ Features:
 - Distribution: source code, LINUX executable, LRP based floppy
 - Automatic modem detection
 
-Additions @doganckaratas:
+Additions by @doganckaratas:
 ========
 - Terminal options menu mechanism changed
 - Logger option now divided into 2 options, log enable/disable and log file selection options.
