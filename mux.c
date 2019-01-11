@@ -49,15 +49,38 @@ static inline char *PrintableBuffer(const char *buffer,const size_t l, size_t *s
 	return printable;
 }
 
+int append_timestamp_and_dump(FILE *stream, char *buffer, int length)
+{
+	int char_pos = 0;
+	time_t raw;
+	struct tm *t;
+	time(&raw);
+	t = localtime(&raw);
+
+	for (char_pos = 0; char_pos < length; char_pos++) {
+		/* TODO: fix timestamp later. */
+		switch(buffer[char_pos]) {
+		case '\n':
+			fprintf(stream, "\n[%02d:%02d:%02d] ", t->tm_hour, t->tm_min, t->tm_sec);
+			break;
+		default:
+			fprintf(stream, "%c", buffer[char_pos]);
+		}
+	}
+
+	return 0;
+}
+
 /* main program loop */
 void mux_loop(int pf)
 {
 	fd_set ready;	/* used for select */
 	int i = 0;	/* used in the multiplex loop */
+	// int char_pos = 0;
 	int done = 0;
 	char buf[BUFSIZE];
-	time_t raw;
-	struct tm *t;
+	// time_t raw;
+	// struct tm *t;
 	struct timeval tv;
 
 	tv.tv_sec = SCRIPT_DELAY;
@@ -90,6 +113,8 @@ void mux_loop(int pf)
 		if (FD_ISSET(pf, &ready)) {
 			/* pf has characters for us */
 			i = read(pf, buf, BUFSIZE);
+			// time(&raw);
+			// t = localtime(&raw);
 			if (i > 0) {
 				if (options & OPTION_LOG_FILTER) {
 					/* only printable characters */
@@ -99,7 +124,7 @@ void mux_loop(int pf)
 					if (flog != NULL) {
 						printable[size] = '\n';
 						printable[size+1] = '\0';
-						const size_t written = fwrite(printable, 1, size, flog);
+						const size_t written = append_timestamp_and_dump(flog, printable, size);
 						if (written != size) {
 							const int error = errno;
 							DEBUG_MSG("error writing log file, only %u characters written, errno = %d",written,error);
@@ -109,24 +134,12 @@ void mux_loop(int pf)
 					/* raw memory dump */
 					DEBUG_DUMP_MEMORY(buf,i);
 					if (flog != 0) {
-						fwrite(buf, 1, i, flog);
+						append_timestamp_and_dump(flog, buf, i);
 					}
 				}
 
-				time(&raw);
-				t = localtime(&raw);
-
-				for (int ch = 0; ch < i; ch++) {
-					/* TODO: fix timestamp later. */
-					/* TODO: logger doesn't acquire timestamp, fix it. */
-					switch(buf[ch]) {
-					case '\n':
-						fprintf(stderr, "\n[%02d:%02d:%02d] ", t->tm_hour, t->tm_min, t->tm_sec);
-						break;
-					default:
-						fprintf(stderr, "%c", buf[ch]);
-					}
-				}
+				/* XXX: DO NOT use stdout, hence it is buffered. */
+				append_timestamp_and_dump(stderr, buf, i);
 
 				if (script) {
 					i = script_process(S_DCE, buf, i);
