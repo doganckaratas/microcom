@@ -51,7 +51,7 @@ static inline char *PrintableBuffer(const char *buffer,const size_t l, size_t *s
 
 int logger_dump_with_timestamp(FILE *stream, char *buffer, int length, enum logger_timestamp_mode m)
 {
-	int char_pos = 0;
+	int char_pos = 0, ret = 0;
 	time_t raw;
 	struct tm *t;
 	struct timeval tv;
@@ -65,18 +65,18 @@ int logger_dump_with_timestamp(FILE *stream, char *buffer, int length, enum logg
 		switch(buffer[char_pos]) {
 		case '\n':
 			if (m == LOGGER_TIMESTAMP_COMPLEX)
-			fprintf(stream, "\n[%04d-%02d-%02d %02d:%02d:%02d.%03i] ", t->tm_year + 1900, t->tm_mon + 1, t->tm_mday, t->tm_hour, t->tm_min, t->tm_sec, tv.tv_usec / 1000);
+			ret += fprintf(stream, "\n[%04d-%02d-%02d %02d:%02d:%02d.%03i] ", t->tm_year + 1900, t->tm_mon + 1, t->tm_mday, t->tm_hour, t->tm_min, t->tm_sec, tv.tv_usec / 1000);
 			else if (m == LOGGER_TIMESTAMP_SIMPLE)
-			fprintf(stream, "\n[%02d:%02d:%02d] ", t->tm_hour, t->tm_min, t->tm_sec);
+			ret += fprintf(stream, "\n[%02d:%02d:%02d] ", t->tm_hour, t->tm_min, t->tm_sec);
 			else
-			fprintf(stream, "\n");
+			ret += fprintf(stream, "\n");
 			break;
 		default:
-			fprintf(stream, "%c", buffer[char_pos]);
+			ret += fprintf(stream, "%c", buffer[char_pos]);
 		}
 	}
 
-	return 0;
+	return ret;
 }
 
 /* main program loop */
