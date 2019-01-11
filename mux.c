@@ -61,7 +61,6 @@ int logger_dump_with_timestamp(FILE *stream, char *buffer, int length, enum logg
 
 
 	for (char_pos = 0; char_pos < length; char_pos++) {
-		/* TODO: fix timestamp later. */
 		switch(buffer[char_pos]) {
 		case '\n':
 			if (m == LOGGER_TIMESTAMP_COMPLEX)
