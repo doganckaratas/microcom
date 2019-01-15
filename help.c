@@ -73,6 +73,8 @@ static void help_escape(void)
 	"  b - send break\n";
 
 	char str2[] =
+	"  n - cycle console timestamp modes\n"
+	"  f - cycle log file timestamp modes\n"
 	"  t - set terminal\n"
 	"  x - quit help\n"
 	"*************************\n";
@@ -137,6 +139,20 @@ static void help_speed(void)
 	write(STDOUT_FILENO, str, strlen(str));
 }
 
+static const char *logger_tostring(enum logger_timestamp_mode l)
+{
+	switch (l) {
+	case LOGGER_TIMESTAMP_NONE:
+		return "none";
+	case LOGGER_TIMESTAMP_SIMPLE:
+		return "simple";
+	case LOGGER_TIMESTAMP_COMPLEX:
+		return "complex";
+	default:
+		return "n/a";
+	}
+}
+
 /* process function for help_state=0 */
 static void help_send_escape(int fd, char c)
 {
@@ -172,6 +188,30 @@ static void help_send_escape(int fd, char c)
 		help_state = 1;
 		help_terminal();
 		in_escape = 1;
+		break;
+		case 'n': {
+			if (console_timestamp_e == LOGGER_TIMESTAMP_NONE)
+				console_timestamp_e = LOGGER_TIMESTAMP_SIMPLE;
+			else if (console_timestamp_e == LOGGER_TIMESTAMP_SIMPLE)
+				console_timestamp_e = LOGGER_TIMESTAMP_COMPLEX;
+			else if (console_timestamp_e == LOGGER_TIMESTAMP_COMPLEX)
+				console_timestamp_e = LOGGER_TIMESTAMP_NONE;
+			else
+				console_timestamp_e = LOGGER_TIMESTAMP_NONE;
+			fprintf(stderr, "console timestamp changed to %s\n", logger_tostring(console_timestamp_e));
+		}
+		break;
+		case 'f': {
+			if (logger_timestamp_e == LOGGER_TIMESTAMP_NONE)
+				logger_timestamp_e = LOGGER_TIMESTAMP_SIMPLE;
+			else if (logger_timestamp_e == LOGGER_TIMESTAMP_SIMPLE)
+				logger_timestamp_e = LOGGER_TIMESTAMP_COMPLEX;
+			else if (logger_timestamp_e == LOGGER_TIMESTAMP_COMPLEX)
+				logger_timestamp_e = LOGGER_TIMESTAMP_NONE;
+			else
+				logger_timestamp_e = LOGGER_TIMESTAMP_NONE;
+			fprintf(stderr, "log file timestamp changed to %s\n", logger_tostring(logger_timestamp_e));
+		}
 		break;
 		case '~': /* display it again */
 		//        help_escape();

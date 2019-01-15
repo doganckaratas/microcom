@@ -24,11 +24,12 @@ Modifications by @doganckaratas:
 - Logger now includes timestamps (extended/basic/none)
 - Timestamps are seperately configurable between console window and log file
 - Removed unnecessary autoconf/automake generated files (project cleanup)
+- Logger and console timestamp modes now configurable realtime
 
 Known bugs:
 ========
 - Unfortunately, DEL key does not redirecting to Terminal target. I'll fix it ASAP
-- Logger filename option and timestamp options are not configurable realtime in console window.
+- Logger filename option not configurable realtime in console window.
 
 Please have a look in the provided index.html file for details.
 ---------------------------------------------------------------
